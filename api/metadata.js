@@ -13,6 +13,23 @@ export default async function handler(req, res) {
     const html = await response.text();
     const $ = cheerio.load(html);
 
+    // Helper to resolve relative URLs
+    const resolveUrl = (link) => {
+      if (!link) return null;
+      try {
+        return new URL(link, url).href; // if it's relative, make it absolute
+      } catch {
+        return null;
+      }
+    };
+
+    // Try multiple favicon options
+    const favicon =
+      $('link[rel="icon"]').attr("href") ||
+      $('link[rel="shortcut icon"]').attr("href") ||
+      $('link[rel="apple-touch-icon"]').attr("href") ||
+      "/favicon.ico"; // fallback
+
     const metadata = {
       title:
         $('meta[property="og:title"]').attr("content") ||
@@ -22,10 +39,8 @@ export default async function handler(req, res) {
         $('meta[property="og:description"]').attr("content") ||
         $('meta[name="description"]').attr("content") ||
         null,
-      image:
-        $('meta[property="og:image"]').attr("content") ||
-        $('link[rel="icon"]').attr("href") ||
-        null,
+      image: resolveUrl($('meta[property="og:image"]').attr("content")),
+      favicon: resolveUrl(favicon),
       url,
     };
 
