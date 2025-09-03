@@ -2,6 +2,16 @@ import fetch from "node-fetch";
 import * as cheerio from "cheerio";
 
 export default async function handler(req, res) {
+  // ✅ Add CORS headers for all responses
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET,OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+
+  // ✅ Handle preflight OPTIONS request
+  if (req.method === "OPTIONS") {
+    return res.status(200).end();
+  }
+
   const { url } = req.query;
 
   if (!url) {
@@ -46,6 +56,8 @@ export default async function handler(req, res) {
 
     res.status(200).json(metadata);
   } catch (error) {
-    res.status(500).json({ error: "Failed to fetch metadata", details: error.message });
+    res
+      .status(500)
+      .json({ error: "Failed to fetch metadata", details: error.message });
   }
 }
